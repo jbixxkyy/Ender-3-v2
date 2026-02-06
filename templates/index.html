@@ -1,0 +1,221 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Web-based control interface for Creality Ender 3 3D printer">
+  <title>Ender 3 Controller Pro â€” Web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="logo-mark">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="4" y="8" width="24" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+          <path d="M10 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/>
+          <line x1="8" y1="14" x2="24" y2="14" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>Ender 3 Controller Pro</h1>
+        <p class="subtitle">Web Interface</p>
+      </div>
+    </header>
+
+    <section class="temp-section">
+      <div class="temp-cards">
+        <div class="temp-card">
+          <span class="temp-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+              <path d="M14 14.76V5a2 2 0 0 0-4 0v9.76a4 4 0 1 0 4 0Z" fill="currentColor" opacity="0.25"/>
+              <path d="M12 3a3 3 0 0 0-3 3v8.17a5 5 0 1 0 6 0V6a3 3 0 0 0-3-3Zm-1 2a1 1 0 0 1 2 0v10.3l.41.25a3 3 0 1 1-2.82 0l.41-.25V5Z" fill="currentColor"/>
+              <circle cx="12" cy="18" r="1.6" fill="currentColor"/>
+            </svg>
+          </span>
+          <div class="temp-info">
+            <span class="temp-label">Hotend</span>
+            <span id="hotend" class="temp-value">-- &deg;C</span>
+          </div>
+        </div>
+        <div class="temp-card">
+          <span class="temp-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+              <rect x="4" y="7" width="16" height="10" rx="2" fill="currentColor" opacity="0.25"/>
+              <rect x="6.5" y="9" width="11" height="6" rx="1.5" fill="currentColor"/>
+              <path d="M7 19c1.2 1 2.4 1 3.6 0m2.4 0c1.2 1 2.4 1 3.6 0m2.4 0c1.2 1 2.4 1 3.6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="temp-info">
+            <span class="temp-label">Bed</span>
+            <span id="bed" class="temp-value">-- &deg;C</span>
+          </div>
+        </div>
+        <button id="refresh-temp" class="btn-icon" title="Refresh Temperature" aria-label="Refresh temperature">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label">Print Progress</span>
+        <span id="eta" class="eta">ETA: --:--</span>
+      </div>
+      <div class="progress-track">
+        <div id="progress-bar" class="progress-fill" style="width: 0%;">
+          <span class="progress-pct">0%</span>
+        </div>
+      </div>
+    </section>
+
+    <nav class="tabs" id="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="connection" role="tab">Connection</button>
+      <button class="tab-btn" data-tab="jog" role="tab">Jog</button>
+      <button class="tab-btn" data-tab="temperature" role="tab">Temperature</button>
+      <button class="tab-btn" data-tab="print" role="tab">Print</button>
+      <button class="tab-btn" data-tab="settings" role="tab">Settings</button>
+      <button class="tab-btn" data-tab="console" role="tab">Console</button>
+    </nav>
+
+    <main id="tab-content">
+      <div id="connection" class="tab-panel active" role="tabpanel">
+        <div class="card">
+          <h3 class="card-title">Printer Connection</h3>
+          <div id="connection-status" class="connection-status">
+            <span id="connection-light" class="status-light disconnected"></span>
+            <span id="connection-text">Disconnected</span>
+            <span id="status" class="status-badge">Idle</span>
+          </div>
+          <div class="form-row">
+            <input id="port" type="text" placeholder="COM3 or /dev/ttyUSB0" class="input-port">
+            <button id="connect" class="btn btn-primary">Connect</button>
+            <button id="disconnect" class="btn btn-secondary">Disconnect</button>
+          </div>
+          <div class="button-group">
+            <button id="estop" class="btn btn-danger">EMERGENCY STOP</button>
+          </div>
+        </div>
+      </div>      <div id="jog" class="tab-panel" role="tabpanel">
+        <div class="card">
+          <h3 class="card-title">Manual Jog</h3>
+          <button id="home" class="btn btn-primary btn-home">Auto Home (G28)</button>
+          <div id="jog-grid" class="jog-grid">
+            <button type="button" data-axis="Y" data-dir="1" class="jog-btn" title="Y+ step">Y+</button>
+            <button type="button" data-axis="X" data-dir="1" class="jog-btn" title="X+ step">X+</button>
+            <button type="button" data-axis="Y" data-dir="-1" class="jog-btn" title="Y- step">Y-</button>
+            <button type="button" data-axis="X" data-dir="-1" class="jog-btn" title="X- step">X-</button>
+            <button type="button" data-axis="Z" data-dir="1" class="jog-btn" title="Z+ step">Z+</button>
+            <button type="button" data-axis="Z" data-dir="-1" class="jog-btn" title="Z- step">Z-</button>
+          </div>
+          <p class="jog-hint">Y-axis: Y+ / Y- · X-axis: X+ / X- · Z+ Z- vertical</p>
+        </div>
+      </div>
+
+      <div id="temperature" class="tab-panel" role="tabpanel">
+        <div class="card">
+          <h3 class="card-title">Temperature Control</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="hotend-set">Hotend Target</label>
+              <div class="input-group">
+                <input type="number" id="hotend-set" min="0" max="260" value="200">
+                <span class="unit">Â°C</span>
+                <button id="set-hotend" class="btn btn-primary">Set</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="bed-set">Bed Target</label>
+              <div class="input-group">
+                <input type="number" id="bed-set" min="0" max="110" value="60">
+                <span class="unit">Â°C</span>
+                <button id="set-bed" class="btn btn-primary">Set</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="print" class="tab-panel" role="tabpanel">
+        <div class="card">
+          <h3 class="card-title">Upload & Print</h3>
+          <div class="form-row">
+            <input type="file" id="gcodefile" accept=".gcode,.gco,.g" class="file-input">
+            <button id="upload" class="btn btn-secondary">Upload</button>
+            <button id="start" class="btn btn-primary">Start Uploaded</button>
+          </div>
+          <div class="button-group">
+            <button id="pause" class="btn btn-secondary">Pause</button>
+            <button id="resume" class="btn btn-secondary">Resume</button>
+            <button id="stop" class="btn btn-danger">Stop</button>
+          </div>
+          <div id="print-status" class="print-status">Status: Idle</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">SD Card</h3>
+          <button id="sd-refresh" class="btn btn-secondary">Refresh SD</button>
+          <select id="sd-files" size="5" class="sd-select"></select>
+          <button id="sd-start" class="btn btn-primary">Start Selected</button>
+        </div>
+      </div>
+
+      <div id="settings" class="tab-panel" role="tabpanel">
+        <div class="card">
+          <h3 class="card-title">UI & Connection</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="accent-color">Accent Color</label>
+              <div class="color-row">
+                <input type="color" id="accent-color" value="#2af3ff">
+                <span class="helper-text">Neon highlights and borders</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="neon-intensity">Neon Intensity</label>
+              <div class="range-row">
+                <input type="range" id="neon-intensity" min="0" max="100" value="70">
+                <span id="neon-value" class="range-value">70%</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="default-port">Default Port</label>
+              <input type="text" id="default-port" placeholder="COM3 or /dev/ttyUSB0">
+            </div>
+            <div class="form-group">
+              <label>Auto-Connect</label>
+              <label class="toggle">
+                <input type="checkbox" id="auto-connect">
+                <span class="toggle-track"></span>
+                <span class="toggle-label">Connect on load</span>
+              </label>
+            </div>
+          </div>
+          <button id="reset-settings" class="btn btn-secondary">Reset Defaults</button>
+        </div>
+      </div>
+
+      <div id="console" class="tab-panel" role="tabpanel">
+        <div class="card console-card">
+          <h3 class="card-title">G-code Console</h3>
+          <div class="console-container">
+            <textarea id="console-text" readonly spellcheck="false"></textarea>
+            <div id="cmdrow" class="cmd-row">
+              <input id="cmd" type="text" placeholder="G-code command (e.g. G28)" class="cmd-input">
+              <button id="send" class="btn btn-primary">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/main.js?v=2"></script>
+</body>
+</html>
+
+
+
