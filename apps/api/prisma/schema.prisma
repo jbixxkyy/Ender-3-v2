@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Printer {
+  id         String   @id @default(cuid())
+  name       String
+  baseUrl    String
+  apiKey     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  jobs       SliceJob[]
+}
+
+model CuraProfile {
+  id           String   @id @default(cuid())
+  name         String
+  sourceType   String
+  config       Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  jobs         SliceJob[]
+}
+
+model SlicedFile {
+  id            String   @id @default(cuid())
+  name          String
+  filePath      String
+  sizeBytes     Int
+  sha256        String
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  jobs          SliceJob[]
+}
+
+model SliceJob {
+  id            String   @id @default(cuid())
+  printerId     String
+  profileId     String
+  slicedFileId  String
+  sourceName    String
+  materialPreset String
+  status        String
+  log           String?
+  createdAt     DateTime @default(now())
+  printer       Printer @relation(fields: [printerId], references: [id])
+  profile       CuraProfile @relation(fields: [profileId], references: [id])
+  slicedFile    SlicedFile @relation(fields: [slicedFileId], references: [id])
+}
+
+model UiPreset {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  values      Json
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

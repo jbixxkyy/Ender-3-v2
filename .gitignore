@@ -1,0 +1,13 @@
+node_modules
+.pnpm-store
+.env
+.DS_Store
+*.log
+/data/*
+!/data/.gitkeep
+apps/api/generated
+apps/api/node_modules
+apps/web/node_modules
+packages/shared/node_modules
+apps/web/dist
+apps/api/dist
