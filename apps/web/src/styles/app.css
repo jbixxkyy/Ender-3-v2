@@ -1,0 +1,17 @@
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #f8fafc;
+  background: #0b1120;
+}
+body { margin: 0; }
+.app-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.sidebar { padding: 20px; background: #0f172a; border-right: 1px solid #1f2937; display:flex; flex-direction:column; gap:16px; }
+.sidebar a { color: #7dd3fc; text-decoration: none; display:block; margin-bottom: 8px; }
+.content { padding: 20px; }
+.grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:16px; }
+.card { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; }
+input, select, button { width:100%; margin-top:8px; padding:10px; border-radius:10px; border:1px solid #334155; background:#0f172a; color:#f8fafc; }
+button { cursor:pointer; background:#0891b2; border:none; }
+ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+.row { display:flex; gap:8px; align-items:center; }
+.row button { width:auto; }

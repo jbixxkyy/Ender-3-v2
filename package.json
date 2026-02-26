@@ -1,0 +1,15 @@
+{
+  "name": "printpilot",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.12.2",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @printpilot/api --filter @printpilot/web dev",
+    "build": "pnpm -r build",
+    "prisma:generate": "pnpm --filter @printpilot/api prisma:generate",
+    "prisma:migrate": "pnpm --filter @printpilot/api prisma:migrate"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
